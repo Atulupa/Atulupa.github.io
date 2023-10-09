@@ -1,28 +1,25 @@
-let result = '';
+let displayValue = "0";
 
-function appendToResult(value) {
-    result += value;
-    document.getElementById('result').value = result;
+function appendToDisplay(value) {
+    if (displayValue === "0" && value !== "C") {
+        displayValue = value;
+    } else if (displayValue !== "0" || /[0-9]/.test(value)) {
+        displayValue += value;
+    }
+    document.getElementById("display").value = displayValue;
 }
 
-function clearResult() {
-    result = '';
-    document.getElementById('result').value = result;
+function clearDisplay() {
+    displayValue = "0";
+    document.getElementById("display").value = displayValue;
 }
 
 function calculateResult() {
     try {
-        const calculationResult = eval(result);
-        document.getElementById('result').value = result + ' = ' + calculationResult;
-        result = calculationResult.toString();
+        displayValue = eval(displayValue);
+        document.getElementById("display").value = displayValue;
     } catch (error) {
-        document.getElementById('result').value = 'Error';
+        displayValue = "Error";
+        document.getElementById("display").value = displayValue;
     }
 }
-
-// Listen for the Enter key press to calculate the result
-document.addEventListener('keyup', function (event) {
-    if (event.key === 'Enter') {
-        calculateResult();
-    }
-});
