@@ -3,35 +3,63 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple Snake Game</title>
+    <title>Slower Snake Game with Controls</title>
     <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+        }
         canvas {
             border: 1px solid black;
+            margin-bottom: 10px;
         }
         #errorLog {
             color: red;
             margin-top: 10px;
         }
+        #controls {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            margin-top: 10px;
+        }
+        button {
+            padding: 10px;
+            font-size: 16px;
+        }
     </style>
 </head>
 <body>
     <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <button id="startButton">Start Game</button>
+    <div id="controls">
+        <button id="leftButton">←</button>
+        <button id="upButton">↑</button>
+        <button id="rightButton">→</button>
+        <div></div>
+        <button id="downButton">↓</button>
+    </div>
     <div id="errorLog"></div>
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
         const errorLog = document.getElementById('errorLog');
+        const startButton = document.getElementById('startButton');
         
         const gridSize = 20;
         const tileCount = canvas.width / gridSize;
         
-        let snake = [
-            {x: 10, y: 10},
-        ];
+        let snake = [{x: 10, y: 10}];
         let dx = 0;
         let dy = 0;
-        
         let food = {x: 15, y: 15};
+        let gameRunning = false;
+        let gameLoop;
+        
+        // Increase this value to make the game slower
+        const gameSpeed = 150; // milliseconds between each game update (increased from 100 to 200)
 
         function logError(message) {
             console.error(message);
@@ -45,9 +73,9 @@
                 drawSnake();
                 drawFood();
                 checkCollision();
-                setTimeout(drawGame, 100);
             } catch (error) {
                 logError(`Game error: ${error.message}`);
+                stopGame();
             }
         }
         
@@ -103,31 +131,46 @@
             dx = 0;
             dy = 0;
             generateFood();
+            stopGame();
+            startButton.textContent = 'Start Game';
         }
         
+        function startGame() {
+            if (!gameRunning) {
+                gameRunning = true;
+                gameLoop = setInterval(drawGame, gameSpeed);
+                startButton.textContent = 'Stop Game';
+            } else {
+                stopGame();
+            }
+        }
+
+        function stopGame() {
+            gameRunning = false;
+            clearInterval(gameLoop);
+            startButton.textContent = 'Start Game';
+        }
+
+        startButton.addEventListener('click', startGame);
+
+        document.getElementById('upButton').addEventListener('click', () => { if (dy === 0) { dx = 0; dy = -1; } });
+        document.getElementById('downButton').addEventListener('click', () => { if (dy === 0) { dx = 0; dy = 1; } });
+        document.getElementById('leftButton').addEventListener('click', () => { if (dx === 0) { dx = -1; dy = 0; } });
+        document.getElementById('rightButton').addEventListener('click', () => { if (dx === 0) { dx = 1; dy = 0; } });
+
         document.addEventListener('keydown', (e) => {
+            if (!gameRunning) return;
             switch(e.key) {
-                case 'ArrowUp':
-                    if (dy === 0) { dx = 0; dy = -1; }
-                    break;
-                case 'ArrowDown':
-                    if (dy === 0) { dx = 0; dy = 1; }
-                    break;
-                case 'ArrowLeft':
-                    if (dx === 0) { dx = -1; dy = 0; }
-                    break;
-                case 'ArrowRight':
-                    if (dx === 0) { dx = 1; dy = 0; }
-                    break;
+                case 'ArrowUp': if (dy === 0) { dx = 0; dy = -1; } break;
+                case 'ArrowDown': if (dy === 0) { dx = 0; dy = 1; } break;
+                case 'ArrowLeft': if (dx === 0) { dx = -1; dy = 0; } break;
+                case 'ArrowRight': if (dx === 0) { dx = 1; dy = 0; } break;
             }
         });
         
-        try {
-            drawGame();
-            logError("Game started successfully. If you don't see anything, please check the console for errors.");
-        } catch (error) {
-            logError(`Failed to start game: ${error.message}`);
-        }
+        clearCanvas();
+        drawSnake();
+        drawFood();
     </script>
 </body>
 </html>
